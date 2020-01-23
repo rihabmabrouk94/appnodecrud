@@ -3,7 +3,6 @@ const models = require("../models/index");
 const userModel = models['Users'];
 const Sequelize = require("sequelize");
 Op = Sequelize.Op;
-
 const validate = require("../helpers/validate");
 module.exports = {
 
