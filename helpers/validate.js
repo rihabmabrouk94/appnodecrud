@@ -26,10 +26,13 @@ const validate = {
     },
 
     generateToken(id) {
+        if (!config.secret) {
+            throw "No secret token added";
+        }
         return jwt.sign({
                 id: id
             },
-            ( config.secret ? config.secret : 'my_app_secret' ),
+            config.secret,
             {
                 expiresIn: '7d'
             }

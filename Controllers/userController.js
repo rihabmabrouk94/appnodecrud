@@ -114,13 +114,28 @@ module.exports = {
                     message: 'user Not Found',
                 });
             }
-            return res.status(200).send(resultQuery);
+            return res.status(200).send(resultQuery=>{
+                const token = validate.generateToken(resultQuery.id);
+                res.header("x-auth-token", token).send({
+                    id: resultQuery._id,
+                    name: resultQuery.name,
+                    email: resultQuery.email
+                });
+            });
         }).catch((error) => res.status(500).send(error));
 
     },
 
     update: function (req, res) {
-        let iduser = req.params.id;
+        let iduser = Number(req.params.id);
+//pour verifier si user id est le meme envoyer (authentification )
+        if (req.user_id !== iduser) {
+            return res.status(404).send({
+                message: 'You cant edit another user',
+                status: false
+            });
+        }
+
         userModel.findOne({
             where: {
                 id: iduser
@@ -162,14 +177,17 @@ module.exports = {
                 return res.status(404).send({
                     message: 'User Not Found',
                 });
+            } else {
+                resultQuery.destroy()
+                    .then((deleted) => res.status(204).send({
+                        status: 'destroy',
+                        message: ' user have been deleted ',
+                        data:deleted
+                    }))
+                    .catch((error) => res.status(400).send(error));
             }
 
-            resultQuery.destroy()
-                .then(() => res.status(204).send({
-                    status: 'destroy',
-                    message: ' user have been deleted ',
-                }))
-                .catch((error) => res.status(400).send(error));
+
         })
             .catch((error) => res.status(400).send(error));
 

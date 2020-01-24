@@ -15,10 +15,10 @@ router.get('/list', function (req, res, next) {
     userController.list(req, res, next)
 });
 
-router.get('/:id',auth, function (req, res, next) {
+router.get('/:id', function (req, res, next) {
     userController.getById(req, res, next)
 });
-router.put('/:id', function (req, res, next) {
+router.put('/:id',auth, function (req, res, next) {
     userController.update(req, res, next)
 });
 router.delete('/:id', function (req, res, next) {
