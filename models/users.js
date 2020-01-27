@@ -1,4 +1,6 @@
 'use strict';
+const RolesModel = require("./index")['Roles'];
+const UsersModel = require("./index")['Users'];
 
 module.exports = (sequelize, DataTypes) => {
   const Users = sequelize.define('Users', {
@@ -9,8 +11,35 @@ module.exports = (sequelize, DataTypes) => {
     password: DataTypes.STRING,
     rf_id: DataTypes.STRING,
   },{});
+
   Users.associate = function(models) {
-    // associations can be defined here
+    Users.belongsToMany(models.Roles, {
+      through: {
+        model: models.Userroles
+      },
+      as: "Roles",
+      foreignKey: "user_id",
+      otherKey: "role_id"
+    });
+
   };
+
+  Users.prototype.getMeWithoutPassword = function() {
+    const userData = this.toJSON();
+    delete userData.password;
+    return userData;
+  };
+
+  Users.prototype.getUserWithRoles = function() {
+    const userData = this.getMeWithoutPassword();
+
+    return new Promise((resolve, reject) => {
+      this.getRoles().then( roles => {
+        userData.roles = roles;
+        resolve(userData);
+      }).catch(error => reject(null))
+    })
+  };
+
   return Users;
 };

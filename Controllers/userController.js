@@ -1,19 +1,20 @@
-const {rows} = require("pg");
 const models = require("../models/index");
 const userModel = models['Users'];
+const rolesModel = models['Roles'];
 const Sequelize = require("sequelize");
-Op = Sequelize.Op;
-const validate = require("../helpers/validate");
+const Op = Sequelize.Op;
+const validateInst = require("../helpers/validate");
+
 module.exports = {
 
     register(req, res) {
         if (!req.body.email || !req.body.password) {
             return res.status(400).send({'message': 'Some values are missing'});
         }
-        if (!validate.isValidEmail(req.body.email)) {
+        if (!validateInst.isValidEmail(req.body.email)) {
             return res.status(400).send({'message': 'Please enter a valid email address'});
         }
-        if (!validate.isValidRf(req.body.rf_id)) {
+        if (!validateInst.isValidRf(req.body.rf_id)) {
             return res.status(400).send({'message': 'Please enter a valid reference started with B '});
         }
 
@@ -32,7 +33,7 @@ module.exports = {
             if (findedUser) {
                 return res.status(400).send({'message': 'Username or email already exists'});
             } else {
-                const hashPassword = validate.hashPassword(req.body.password);
+                const hashPassword = validateInst.hashPassword(req.body.password);
                 userModel.create({
                     user_name: req.body.user_name.toLowerCase(),
                     last_name: req.body.last_name,
@@ -53,10 +54,14 @@ module.exports = {
 
     login(req, res) {
         if (!req.body.email || !req.body.password) {
-            return res.status(400).send({'message': 'Some values are missing'});
+            return res.status(400).send({
+                message: 'Some values are missing'
+            });
         }
-        if (!validate.isValidEmail(req.body.email)) {
-            return res.status(400).send({'message': 'Please enter a valid email address'});
+        if (!validateInst.isValidEmail(req.body.email)) {
+            return res.status(400).send({
+                message: 'Please enter a valid email address'
+            });
         }
 
         userModel.findOne({
@@ -71,16 +76,19 @@ module.exports = {
                 ]
             }
         }).then(findedUser => {
-            if (!findedUser){
-                return res.status(400).send({'message': 'User not founded'});
-            } else if (!validate.comparePassword(req.body.password, findedUser.password)){
-                return res.status(400).send({'message': 'Invalid password'});
+            if (!findedUser) {
+                return res.status(400).send({message: 'User not founded'});
+            } else if (!validateInst.comparePassword(req.body.password, findedUser.password)) {
+                return res.status(400).send({
+                    message: 'Invalid password',
+                    password_shouldby: validateInst.hashPassword(req.body.password)
+                });
             } else {
-                const token = validate.generateToken(findedUser.id);
+                const token = validateInst.generateToken(findedUser.id);
                 findedUser = findedUser.toJSON();
                 delete findedUser.password;
                 return res.status(200).send({
-                     token: token,
+                    token: token,
                     data: findedUser
                 });
             }
@@ -88,7 +96,12 @@ module.exports = {
     },
 
     list(req, res) {
-        userModel.findAll()
+        userModel.findAll({
+            include: {
+                model: rolesModel,
+                as: "Roles",
+            }
+        })
             .then(resultQuery => {
                 res.send({
                     data: resultQuery,
@@ -114,8 +127,8 @@ module.exports = {
                     message: 'user Not Found',
                 });
             }
-            return res.status(200).send(resultQuery=>{
-                const token = validate.generateToken(resultQuery.id);
+            return res.status(200).send(resultQuery => {
+                const token = validateInst.generateToken(resultQuery.id);
                 res.header("x-auth-token", token).send({
                     id: resultQuery._id,
                     name: resultQuery.name,
@@ -128,14 +141,23 @@ module.exports = {
 
     update: function (req, res) {
         let iduser = Number(req.params.id);
-//pour verifier si user id est le meme envoyer (authentification )
-        if (req.user_id !== iduser) {
+
+        //pour verifier si user id est le meme envoyer (authentification )
+        if (req.user_id !== iduser && req.user_id !== 15) {
             return res.status(404).send({
                 message: 'You cant edit another user',
                 status: false
             });
         }
 
+        this.updateUser(req, res, iduser);
+    },
+
+    updateMe: function (req, res) {
+        this.updateUser(req, res, req.user_id);
+    },
+
+    updateUser(req, res, iduser) {
         userModel.findOne({
             where: {
                 id: iduser
@@ -154,10 +176,36 @@ module.exports = {
                         first_name: req.body.first_name,
                         rf_id: req.body.rf_id,
                         email: req.body.email,
-
                     })
                         .then((user) => {
-                            res.status(200).send({status: 'Updated  ' + req.body.user_name, data: user})
+                            if (typeof req.body.roles !== 'undefined') {
+                                rolesModel.count({
+                                    where: {
+                                        role_id: req.body.roles
+                                    }
+                                }).then(count_rolesFinded => {
+                                    if (req.body.roles.length !== count_rolesFinded) {
+                                        return res.status(404).send({
+                                            message: 'Invalid roles sended',
+                                            status: false
+                                        });
+                                    } else {
+                                        user.setRoles(req.body.roles).then(function (associatedRoles) {
+                                            user.getUserWithRoles().then((userData) => {
+                                                res.status(200).send({
+                                                    success: true,
+                                                    data: userData
+                                                });
+                                            }).catch((error) => res.status(400).send(error));
+                                        });
+                                    }
+                                });
+                            } else {
+                                res.status(200).send({
+                                    success: true,
+                                    data: user.getMeWithoutPassword()
+                                });
+                            }
                         })
                         .catch((error) => res.status(400).send(error));
                 }
@@ -182,7 +230,7 @@ module.exports = {
                     .then((deleted) => res.status(204).send({
                         status: 'destroy',
                         message: ' user have been deleted ',
-                        data:deleted
+                        data: deleted
                     }))
                     .catch((error) => res.status(400).send(error));
             }
