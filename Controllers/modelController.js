@@ -1,114 +1,33 @@
 const models = require("../models/index");
 const MachineModels = models['MachineModels'];
 const Machines = models['Machines'];
+const validate = require("../helpers/validate");
+const ApiController = require("./apiController");
 
-module.exports = {
+class MachineModelsController extends ApiController {
 
-    create(req, res) {
-        MachineModels.create({
-            label: req.body.label
-        })
-            .then(line => res.status(201).send({
-                status: 201,
-                data: line,
-                message: req.body.label + " created "
-            }))
-            .catch(error => res.status(400).send(error))
-
-    },
-
-    list(req, res) {
-        MachineModels.findAll({
-            include: [
-                {
-                    model: Machines,
-                    as: 'machines'
-                }
-            ]
-        })
-            .then(resultQuery => {
-                res.send({
-                    data: resultQuery,
-                    success: true,
-                    messages: [{
-                        code: "01",
-                        message: "lines.GetAllWithSuccess"
-                    }]
-                });
-            }).catch(error => res.status(400).send(error))
-    },
-
-    getById(req, res) {
-        let machine_model_id = req.params.id;
-
-        MachineModels.findOne({
-            where: {
-                machine_model_id: machine_model_id
+    constructor() {
+        super();
+        this.entity_model = MachineModels;
+        this.entity_id_name = 'machine_model_id';
+        this.list_includes = [
+            {
+                model: Machines,
+                as: 'machines'
             }
-        }).then(function (resultQuery) {
-            if (!resultQuery) {
-                return res.status(404).send({
-                    message: 'line Not Found',
-                });
-            }
-            return res.status(200).send(resultQuery);
-        }).catch((error) => res.status(500).send(error));
+        ];
+    }
 
-    },
+    preSaveValidation(data) {
+        if (!validate.isValidMac(data.mac_address)) {
+            return false;
+        }
 
-    update: function (req, res) {
-        let machine_model_id = req.params.id;
-        MachineModels.findOne({
-            where: {
-                machine_model_id: Number(machine_model_id)
-            }
-        })
-            .then(findersQuery => {
-                if (!findersQuery) {
-                    return res.status(404).send({
-                        message: 'user Not Found',
-                        status: false,
-                    });
-                } else {
-                    findersQuery.update({
-                        label: req.body.label,
-                        auth_mac: req.body.auth_mac,
-                        line_id: req.body.line_id
-
-                    })
-                        .then((box) => {
-                            res.status(200).send({status: 'Updated  ', data: box})
-                        })
-                        .catch((error) => res.status(400).send(error));
-                }
-            })
-            .catch((error) => res.status(400).send(error));
-    },
-
-    delete(req, res) {
-        let id = req.params.id;
-
-        MachineModels.findOne({
-            where: {
-                machine_model_id: id
-            }
-        }).then(function (resultQuery) {
-            if (!resultQuery) {
-                return res.status(404).send({
-                    message: 'User Not Found',
-                });
-            }
-
-            resultQuery.destroy()
-                .then(() => res.status(204).send({
-                    status: 'destroy',
-                    message: ' box has been deleted ',
-                }))
-                .catch((error) => res.status(400).send(error));
-        })
-            .catch((error) => res.status(400).send(error));
-
-    },
+        return true;
+    }
 
 
-};
+}
+
+module.exports = MachineModelsController;
+

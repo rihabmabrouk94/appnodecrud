@@ -1,20 +1,25 @@
 const router = require('express').Router();
-const  machineController = require('./../Controllers/machineController');
+const  MachineController = require('./../Controllers/machineController');
+const MachineControllerInst = new MachineController();
 
 router.post('/create', function (req, res, next) {
-    machineController.create(req, res, next)
+    MachineControllerInst.create(req, res, next)
 });
+
 router.get('/list',function (req,res) {
-    machineController.list(req, res)
+    MachineControllerInst.list(req, res)
 });
+
 router.get('/:id', function (req, res, next) {
-    machineController.getById(req, res, next)
+    MachineControllerInst.getById(req, res, next)
 });
 
 router.put('/:id', function (req, res, next) {
-    machineController.update(req, res, next)
+    MachineControllerInst.update(req, res, next)
 });
+
 router.delete('/:id', function (req, res, next) {
-    machineController.delete(req, res, next)
+    MachineControllerInst.delete(req, res, next)
 });
+
 module.exports = router;

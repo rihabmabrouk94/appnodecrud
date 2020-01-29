@@ -1,20 +1,25 @@
 const router = require('express').Router();
-const  lineController = require('./../Controllers/lineController');
+const LineController = require('./../Controllers/lineController');
+const LineControllerInst = new LineController();
 
-router.post('/createline', function (req, res, next) {
-    lineController.createline(req, res, next)
+router.post('/create', function (req, res, next) {
+    LineControllerInst.createline(req, res, next)
 });
-router.get('/listline',function (req,res) {
-    lineController.listoflines(req, res)
+
+router.get('/list',function (req,res) {
+    LineControllerInst.list(req, res)
 });
+
 router.get('/:id', function (req, res, next) {
-    lineController.getlineById(req, res, next)
+    LineControllerInst.get(req, res, next)
 });
 
 router.put('/:id', function (req, res, next) {
-    lineController.updateline(req, res, next)
+    LineControllerInst.update(req, res, next)
 });
+
 router.delete('/:id', function (req, res, next) {
-    lineController.deleteline(req, res, next)
+    LineControllerInst.delete(req, res, next)
 });
+
 module.exports = router;

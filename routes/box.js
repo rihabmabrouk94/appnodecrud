@@ -1,20 +1,25 @@
 const router = require('express').Router();
-const  boxController = require('./../Controllers/boxController');
+const BoxController = require('./../Controllers/boxController');
+const BoxControllerInst = new BoxController();
 
 router.post('/create', function (req, res, next) {
-    boxController.create(req, res)
+    BoxControllerInst.create(req, res)
 });
+
 router.get('/list',function (req,res) {
-    boxController.list(req, res)
+    BoxControllerInst.list(req, res)
 });
-router.get('/:id', function (req, res, next) {
-    boxController.get(req, res)
+
+router.get('/:id', function (req, res) {
+    BoxControllerInst.get(req, res);
 });
 
 router.put('/:id', function (req, res, next) {
-    boxController.update(req, res)
+    BoxControllerInst.update(req, res)
 });
+
 router.delete('/:id', function (req, res, next) {
-    boxController.delete(req, res)
+    BoxControllerInst.delete(req, res)
 });
+
 module.exports = router;
