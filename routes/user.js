@@ -1,16 +1,22 @@
 const router = require('express').Router();
 const userController = require('./../Controllers/userController');
+const usersessionController = require('./../Controllers/userSessionController');
 const models = require("../models/index");
 const auth = require("./../middleware/Auth");
 
 const UserControllerInst = new userController();
+const usersessionControllerInst = new usersessionController();
 
 router.post('/register', function (req, res, next) {
-    UserControllerInst.register(req, res, next)
+    UserControllerInst.create(req, res, next)
 });
 
 router.post('/login', function (req, res, next) {
     UserControllerInst.login(req, res, next)
+});
+
+router.post('/auth', function (req, res, next) {
+    usersessionControllerInst.authentificate(req, res)
 });
 
 router.get('/list', function (req, res, next) {

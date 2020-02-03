@@ -29,7 +29,6 @@ class userController extends ApiController {
             const valid_password = (objectToSave && objectToSave.password && objectToSave.password.length > 7);
             const valid_email = (objectToSave && objectToSave.email && validate.isValidEmail(objectToSave.email));
             if (valid_password && valid_email) {
-
                 rolesModel.count({
                     where: {
                         role_id: req.body.roles
@@ -54,9 +53,12 @@ class userController extends ApiController {
             }
         });
     }
-// conditions after we save data
-    //1--the roles must be exist
-    //2--using the getUserWithRoles must get the user data without password
+
+    /*
+        conditions after we save data
+        1--the roles must be exist
+        2--using the getUserWithRoles must get the user data without password
+     */
     afterUpdate(userData, req,res){
         if (typeof req.body.roles !== 'undefined') {
             userData.setRoles(req.body.roles).then(function (associatedRoles) {

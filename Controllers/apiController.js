@@ -1,13 +1,14 @@
 const models = require("../models/index");
 const boxModel = models['Boxes'];
+const usersessionModel = models['Usersessions'];
 
 class ApiController {
 
     constructor(req, res) {
-        this.entity_model = null;
-        this.entity_id_name = null;
-        this.list_includes = [];
-        this.list_where = {};
+            this.entity_model = null;
+            this.entity_id_name = null;
+            this.list_includes = [];
+            this.list_where = {};
     }
 
     checkConfiguration(req, res) {
@@ -19,6 +20,11 @@ class ApiController {
         } else {
             return true;
         }
+    }
+    infoUser(objectToSave, req, res) {
+        return new Promise((resolve, reject) => {
+            resolve(objectToSave);
+        })
     }
 
     get(req, res) {
@@ -54,33 +60,35 @@ class ApiController {
     }
 
     create(req, res) {
-//verify if you put data
+        //verify if you put data
         if (!req.body) {
             return res.status(400).send({
                 message: "Global.PleaseEnterEntityData"
             });
         }
         let _this = this;
-// objectToSave take the value of the request sanded
+        // objectToSave take the value of the request sanded
         const objectToSave = req.body;
         // send to preSave and wait the promise
         this.preSaveValidation(objectToSave)
-        // if the process return the object after the modification
-            .then( objectToSaveValidated => {
-                //if objectToSave is valid  update objectToSaveUpdated
-            _this.processDataPreSave(objectToSaveValidated, req, res).then(objectToSaveUpdated => {
-                this.entity_model.create(objectToSaveValidated)
-                // send the result created
-                    .then(entityCreated => res.status(201).send({
-                        status: 201,
-                        data: entityCreated,
-                        message: "EntityCreatedWithSuccess"
-                    }))
-                    .catch(error => res.status(400).send(error));
-                // probleme with the processDataPreSave
-            }).catch((error) => res.status(500).send(error));
 
-        }).catch(err => {
+        // if the process return the object after the modification
+            .then(objectToSaveValidated => {
+                //if objectToSave is valid  update objectToSaveUpdated
+                _this.processDataPreSave(objectToSave, req, res).then(objectToSaveUpdated => {
+                    this.entity_model.create(objectToSaveValidated)
+                    console.log(objectToSaveValidated)
+                    // send the result created
+                        .then(entityCreated => res.status(201).send({
+                            status: 201,
+                            data: entityCreated,
+                            message: "EntityCreatedWithSuccess"
+                        }))
+                        .catch(error => res.status(400).send(error));
+                    // probleme with the processDataPreSave
+                }).catch((error) => res.status(500).send(error));
+
+            }).catch(err => {
             return res.status(400).send(err);
         });
 
@@ -114,7 +122,7 @@ class ApiController {
 
             // send to preSave and wait the promise
             _this.processDataPreSave(objectToSave, req, res)
-                // si le process retourn l objet après la modification
+            // si le process retourn l objet après la modification
                 .then(objectToSaveUpdated => {
                     //if objectToSave is valid  update objectToSaveUpdated
                     resultEntity.update(objectToSaveUpdated)
@@ -123,11 +131,11 @@ class ApiController {
                             _this.afterUpdate(entitySaved, req, res);
                         }).catch((error) => res.status(500).send(error));
 
-                // le process de presave lance une erreur
+                    // le process de presave lance une erreur
                 }).catch((error) => res.status(500).send(error));
         })
         // probleme avec le find one
-        .catch((error) => res.status(500).send(error));
+            .catch((error) => res.status(500).send(error));
 
     }
 
@@ -173,20 +181,44 @@ class ApiController {
             return;
         }
 
-        this.entity_model.findAll({
+        console.log('req.params', req.query)
+        const limit = (req.query.limit) ? Number(req.query.limit) : 10;
+        const page = (req.query.page && req.query.page > 0) ? Number(req.query.page) : 1;
+        const findOptions = {
             include: this.list_includes,
             where: this.list_where,
-        })
-            .then(resultQuery => {
-                res.send({
-                    data: resultQuery,
-                    success: true,
-                    messages: [{
-                        code: "01",
-                        message: "Boxes.GetAllWithSuccess"
-                    }]
-                });
-            }).catch(error => res.status(400).send(error))
+            offset: ((page - 1) * limit),
+            limit: limit,
+        };
+
+        const findOptionsCount = JSON.parse(JSON.stringify(findOptions));
+        // OR const findOptionsCount = Object.assign({}, findOptions);
+        // OR const findOptionsCount = { ... findOptions };
+        delete findOptionsCount.offset;
+        delete findOptionsCount.limit;
+        delete findOptionsCount.include;
+
+        this.entity_model.count(findOptionsCount).then(countTotal => {
+            this.entity_model.findAll(findOptions)
+                .then(resultQuery => {
+                    res.send({
+                        data: resultQuery,
+                        success: true,
+                        messages: [{
+                            code: "01",
+                            message: "Boxes.GetAllWithSuccess"
+                        }],
+                        attrs: {
+                            limit: limit,
+                            page: page,
+                            countTotal: countTotal,
+                        }
+                    });
+                }).catch(error => res.status(400).send(error));
+        });
+
+
+
     }
 }
 

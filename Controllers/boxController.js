@@ -21,11 +21,13 @@ class BoxController extends ApiController {
     preSaveValidation(objectToSave) {
         return new Promise((resolve, reject) => {
             if (validate.isValidMac(objectToSave.mac_address)) {
-                resolve(objectToSave);;
-            } else {
-                reject({
-                    status: false,
-                    message: 'InvalidMacAddress',
+                resolve(objectToSave);
+            }
+            if (typeof dataReceived.items === "undefined" || dataReceived.items.length === 0) {
+                return res.status(500).send({
+                    success: false,
+                    data: dataReceived,
+                    message: "no items inserted",
                 });
             }
         });

@@ -242,3 +242,22 @@ module.exports = {
     },
 
 };
+if (req.params.id) {
+    userModel.findOne({
+        where: [
+            {
+                email: objectToSave.email
+            },
+            {
+                id: req.params.id
+            },
+            {
+                email:
+                    {
+                        [Op.eq]:objectToSave.email
+                    }
+            }
+
+        ]
+    }).then((error) => res.status(400).send(error));
+}

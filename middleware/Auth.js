@@ -1,7 +1,9 @@
 const jwt = require("jsonwebtoken");
 const config = require(__dirname + '/../config/config.json');
 
+
 module.exports = (req, res, next) => {
+
     try {
 
         // je dois vérifier si le secret est bien rajouté dans la config
@@ -32,6 +34,7 @@ module.exports = (req, res, next) => {
             req.user_id = decodedToken.id;
             next();
         }
+
 
     } catch (e) {
         return res.status(401).json({
