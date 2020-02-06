@@ -106,23 +106,69 @@ class usersessionController extends ApiController {
     }
 
     closeOldSessions(user_id, box_id) {
-        usersessionModel.update({ time_finish: new Date()}, {
-            where: {
-                time_finish: {
-                    [Op.eq]: null
-                },
-                box_id: box_id
-            }
-        });
+        if (user_id) {
+            usersessionModel.update({ time_finish: new Date()}, {
+                where: {
+                    time_finish: {
+                        [Op.eq]: null
+                    },
+                    user_id: user_id
+                }
+            });
+        }
+        if (box_id) {
+            usersessionModel.update({ time_finish: new Date()}, {
+                where: {
+                    time_finish: {
+                        [Op.eq]: null
+                    },
+                    box_id: box_id
+                }
+            });
+        }
+    }
 
-        usersessionModel.update({ time_finish: new Date()}, {
-            where: {
-                time_finish: {
-                    [Op.eq]: null
-                },
-                user_id: user_id
+    logoutSession(req, res) {
+        if (!req.body.user_id && !req.body.box_id && !req.body.usersession_id) {
+            return res.status(400).send({'message': 'invalid params'});
+        }
+
+        const whereConfig = {
+            time_finish: {
+                [Op.eq]: null
             }
-        });
+        };
+
+        if (req.body.user_id) {
+            whereConfig.user_id = req.body.user_id;
+        }
+        if (req.body.usersession_id) {
+            whereConfig.usersession_id = Number(req.body.usersession_id);
+        }
+        if (req.body.box_id) {
+            whereConfig.box_id = Number(req.body.box_id);
+        }
+
+        usersessionModel.findOne({
+            where: whereConfig
+        }).then(findedsession => {
+            if (!findedsession) {
+                res.status(400).send({'message': 'session already logued out'});
+            } else {
+                usersessionModel.update({time_finish: new Date()}, {
+                    where: {
+                        time_finish: {
+                            [Op.eq]: null
+                        },
+                        user_id: findedsession.user_id
+                    }
+                }).then(res.status(200).send({'message': 'user logued out'}))
+            }
+
+        })
+            .catch(error => res.status(400).send(error))
+
+
     }
 }
 

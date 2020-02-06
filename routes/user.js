@@ -18,6 +18,9 @@ router.post('/login', function (req, res, next) {
 router.post('/auth', function (req, res, next) {
     usersessionControllerInst.authentificate(req, res)
 });
+router.put('/logout', function (req, res, next) {
+    usersessionControllerInst.logoutSession(req, res)
+});
 
 router.get('/list', function (req, res, next) {
     UserControllerInst.list(req, res, next)

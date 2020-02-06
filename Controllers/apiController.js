@@ -21,11 +21,6 @@ class ApiController {
             return true;
         }
     }
-    infoUser(objectToSave, req, res) {
-        return new Promise((resolve, reject) => {
-            resolve(objectToSave);
-        })
-    }
 
     get(req, res) {
         if (typeof this.checkConfiguration(req, res) !== "boolean") {
@@ -75,9 +70,8 @@ class ApiController {
         // if the process return the object after the modification
             .then(objectToSaveValidated => {
                 //if objectToSave is valid  update objectToSaveUpdated
-                _this.processDataPreSave(objectToSave, req, res).then(objectToSaveUpdated => {
+                _this.processDataPreSave(objectToSave, req, res).then(objectToSaveValidated => {
                     this.entity_model.create(objectToSaveValidated)
-                    console.log(objectToSaveValidated)
                     // send the result created
                         .then(entityCreated => res.status(201).send({
                             status: 201,
@@ -206,7 +200,7 @@ class ApiController {
                         success: true,
                         messages: [{
                             code: "01",
-                            message: "Boxes.GetAllWithSuccess"
+                            message: "entity.GetAllWithSuccess"
                         }],
                         attrs: {
                             limit: limit,
@@ -216,9 +210,6 @@ class ApiController {
                     });
                 }).catch(error => res.status(400).send(error));
         });
-
-
-
     }
 }
 
