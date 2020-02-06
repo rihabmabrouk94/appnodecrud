@@ -1,6 +1,7 @@
 const models = require("../models/index");
 const MachineTypes = models['MachineTypes'];
 const Machines = models['Machines'];
+const Operations = models['Operations'];
 module.exports = {
 
     create(req, res) {
@@ -22,7 +23,11 @@ module.exports = {
                 {
                     model: Machines,
                     as: 'machines'
-                }
+                },
+                {
+                    model: Operations,
+                    as: 'Operations'
+                },
             ]
         })
             .then(resultQuery => {

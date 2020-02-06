@@ -1,13 +1,13 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
-    const operationModel = sequelize.define('Operations', {
-        operation_id:{
+    const operationTemplateModel = sequelize.define('OperationTemplates', {
+        operation_type_id:{
             allowNull: false,
             autoIncrement: true,
             primaryKey: true,
             type: DataTypes.INTEGER
         },
-        bundle_id: {
+        article_id: {
             type: DataTypes.INTEGER
         },
         time: {
@@ -16,23 +16,20 @@ module.exports = (sequelize, DataTypes) => {
         label: {
             type: DataTypes.STRING
         },
-        description: {
-            type: DataTypes.STRING
-        },
         machine_type_id: {
             type: DataTypes.INTEGER
         }
 
     }, {});
-    operationModel.associate = function(models) {
-        operationModel.belongsTo(models.Bundles, {
-            foreignKey: 'bundle_id',
-            as: 'Bundles'
+    operationTemplateModel.associate = function(models) {
+        operationTemplateModel.belongsTo(models.Articles, {
+            foreignKey: 'article_id',
+            as: 'Articles'
         });
-        operationModel.belongsTo(models.MachineTypes, {
+        operationTemplateModel.belongsTo(models.MachineTypes, {
             foreignKey: 'machine_type_id',
             as: 'MachineTypes'
         });
     };
-    return operationModel;
+    return operationTemplateModel;
 };

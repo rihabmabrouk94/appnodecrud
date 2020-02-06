@@ -11,6 +11,7 @@ const articleRoute= require('./article');
 const bundleRoute= require('./bundle');
 const orderRoute= require('./order');
 const operationRoute= require('./operation');
+const operationtemplateRoute= require('./operationtemplate');
 
 router.use("/user" , userRoute);
 router.use("/box" , boxRoute);
@@ -24,5 +25,6 @@ router.use("/article",articleRoute);
 router.use("/bundle",bundleRoute);
 router.use("/order",orderRoute);
 router.use("/operation",operationRoute);
+router.use("/operationtemplate",operationtemplateRoute);
 
 module.exports = router;

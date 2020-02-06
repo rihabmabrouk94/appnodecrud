@@ -1,14 +1,14 @@
 'use strict';
 module.exports = {
     up: (queryInterface, Sequelize) => {
-        return queryInterface.createTable('Operations', {
-            operation_id: {
+        return queryInterface.createTable('OperationTemplates', {
+            operation_type_id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            bundle_id: {
+            article_id: {
                 allowNull: true,
                 type: Sequelize.INTEGER
             },
@@ -24,10 +24,7 @@ module.exports = {
                 allowNull: true,
                 type: Sequelize.STRING
             },
-            description: {
-                allowNull: true,
-                type: Sequelize.STRING
-            },
+
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE
@@ -39,6 +36,6 @@ module.exports = {
         });
     },
     down: (queryInterface, Sequelize) => {
-        return queryInterface.dropTable('Operations');
+        return queryInterface.dropTable('OperationTemplates');
     }
 };
