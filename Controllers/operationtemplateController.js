@@ -23,10 +23,17 @@ class OperationtemplateController extends ApiController {
                 model: clientModel,
                 as: 'Clients'
             }
-
         ];
     }
+    verifyexist(req,res){
+        orderModel.findOne({
+            where:{
+                article_id:req.body.article_id
+            },
 
+        })
+
+    }
     generateurOrder(req, res) {
         let code = req.body.code;
         let article_id = Number(req.body.article_id);
@@ -67,29 +74,117 @@ class OperationtemplateController extends ApiController {
                 });
             }
 
-            orderModel.create({
-                code: code,
-                article_id: article_id,
-                client_id: client_id,
+            orderModel.findOne({
+                where: {
+                    code: code,
+                }
+            }).then(orderFinded => {
+                if (!orderFinded) {
+                    _this.checkArticle(article_id).then(articleFinded => {
+                        /*
+                        return _this.createOrder({
+                            code: code,
+                            article_id: article_id,
+                            client_id: client_id,
+                            bundles: bundles,
+                        }, req, res);
+                         */
+                        return _this.createOrderWithPromise({
+                            code: code,
+                            article_id: article_id,
+                            client_id: client_id,
+                            bundles: bundles,
+                        }).then(responseCreation => {
+                            res.status(200).send(responseCreation);
+                        }).catch(err => res.status(400).send(err));
+                    })
+                    .catch(error => res.status(400).send(error));
 
+                } else {
+                    return res.status(400).send({
+                        success: false,
+                        data: null,
+                        messages: 'order alredy existe',
+                    });
+                }
+
+            })
+                .catch(error => res.status(400).send(error))
+        })
+    }
+
+    checkArticle(article_id) {
+        let _this = this;
+        return new Promise((resolve, reject) => {
+            articleModel.findOne({
+                where: {
+                    article_id: article_id
+                }
+            }).then(articleFinded => {
+                if (articleFinded) {
+                    resolve(articleFinded)
+                } else {
+                    reject({
+                        success: false,
+                        data: null,
+                        messages: 'article not exists',
+                    })
+                }
+            })
+                .catch(error => reject(error));
+        })
+    }
+
+    createOrder(data, req, res) {
+        let _this = this;
+        orderModel.create({
+            code: data.code,
+            article_id: data.article_id,
+            client_id: data.client_id,
+        }).then(orderCreated => {
+            if (!orderCreated) {
+                res.status(400).send({message: 'something is wrong'});
+            } else {
+                let bundles_promises = [];
+                data.bundles.forEach(bundle_item => {
+                    bundles_promises.push(_this.generateBundle(bundle_item, orderCreated));
+                });
+
+                Promise.all(bundles_promises).then(function(bundles_created) {
+                    const new_order = orderCreated.toJSON();
+                    new_order.bundles = bundles_created;
+                    res.status(200).send({message: 'bundle crated', new_order: new_order});
+                }).catch(error => res.status(400).send(error))
+            }
+        })
+        .catch(error => res.status(400).send(error))
+    }
+
+    createOrderWithPromise(data) {
+        let _this = this;
+        return new Promise((resolve, reject) => {
+            orderModel.create({
+                code: data.code,
+                article_id: data.article_id,
+                client_id: data.client_id,
             }).then(orderCreated => {
                 if (!orderCreated) {
-                    res.status(400).send({'message': 'something is wrong'});
+                    reject({message: 'something is wrong'});
                 } else {
                     let bundles_promises = [];
-                    bundles.forEach(bundle_item => {
+                    data.bundles.forEach(bundle_item => {
                         bundles_promises.push(_this.generateBundle(bundle_item, orderCreated));
                     });
 
                     Promise.all(bundles_promises).then(function(bundles_created) {
                         const new_order = orderCreated.toJSON();
                         new_order.bundles = bundles_created;
-                        res.status(200).send({'message': 'bundle crated', new_order: new_order});
-                    }).catch(error => res.status(400).send(error))
+                        resolve({message: 'bundle crated', new_order: new_order});
+                    }).catch(error => reject(error))
                 }
             })
-                .catch(error => res.status(400).send(error))
-        })
+                .catch(error => reject(error))
+        });
     }
 
     generateBundle(bundleData, orderCreated) {
@@ -112,7 +207,7 @@ class OperationtemplateController extends ApiController {
                     reject(null);
                 }
             })
-            .catch(error => reject(error))
+                .catch(error => reject(error))
         });
     }
 
@@ -149,10 +244,9 @@ class OperationtemplateController extends ApiController {
             }).then(operation_created => {
                 resolve(operation_created);
             })
-            .catch(error => reject(error));
+                .catch(error => reject(error));
         })
     }
-
 }
 
 module.exports = OperationtemplateController;

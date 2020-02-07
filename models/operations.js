@@ -16,8 +16,17 @@ module.exports = (sequelize, DataTypes) => {
         label: {
             type: DataTypes.STRING
         },
+        finished: {
+            type: DataTypes.STRING
+        },
         description: {
             type: DataTypes.STRING
+        },
+        quantity_total: {
+            type: DataTypes.INTEGER
+        },
+        quantity_relised: {
+            type: DataTypes.INTEGER
         },
         machine_type_id: {
             type: DataTypes.INTEGER

@@ -28,6 +28,16 @@ module.exports = {
                 allowNull: true,
                 type: Sequelize.STRING
             },
+            finished: {
+                allowNull: true,
+                type: Sequelize.STRING
+            },
+            quantity_total: {
+                type: Sequelize.INTEGER
+            },
+            quantity_relised: {
+                type: Sequelize.INTEGER
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE
