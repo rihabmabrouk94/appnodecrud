@@ -89,13 +89,15 @@ class OperationtemplateController extends ApiController {
                             bundles: bundles,
                         }, req, res);
                          */
-                        return _this.createOrderWithPromise({
-                            code: code,
-                            article_id: article_id,
-                            client_id: client_id,
-                            bundles: bundles,
-                        }).then(responseCreation => {
-                            res.status(200).send(responseCreation);
+                        _this.checkClient(client_id).then(clientFinded => {
+                            return _this.createOrderWithPromise({
+                                code: code,
+                                article_id: article_id,
+                                client_id: client_id,
+                                bundles: bundles,
+                            }).then(responseCreation => {
+                                res.status(200).send(responseCreation);
+                            }).catch(err => res.status(400).send(err));
                         }).catch(err => res.status(400).send(err));
                     })
                     .catch(error => res.status(400).send(error));
@@ -128,6 +130,28 @@ class OperationtemplateController extends ApiController {
                         success: false,
                         data: null,
                         messages: 'article not exists',
+                    })
+                }
+            })
+                .catch(error => reject(error));
+        })
+    }
+
+    checkClient(client_id) {
+        let _this = this;
+        return new Promise((resolve, reject) => {
+            clientModel.findOne({
+                where: {
+                    client_id: client_id
+                }
+            }).then(clientFinded => {
+                if (clientFinded) {
+                    resolve(clientFinded)
+                } else {
+                    reject({
+                        success: false,
+                        data: null,
+                        messages: 'client not exists',
                     })
                 }
             })
