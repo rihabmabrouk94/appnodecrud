@@ -164,11 +164,8 @@ class usersessionController extends ApiController {
                     }
                 }).then(res.status(200).send({'message': 'user logued out'}))
             }
-
         })
-            .catch(error => res.status(400).send(error))
-
-
+            .catch(error => res.status(400).send(error));
     }
 }
 

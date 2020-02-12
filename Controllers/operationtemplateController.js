@@ -5,6 +5,7 @@ const articleModel = models['Articles'];
 const orderModel = models['Orders'];
 const clientModel = models['Clients'];
 const bundleModel = models['Bundles'];
+const MachineTypesModel = models['MachineTypes'];
 const validate = require("../helpers/validate");
 const ApiController = require("./apiController");
 
@@ -257,6 +258,7 @@ class OperationtemplateController extends ApiController {
     }
 
     generateOperationItemForBundle(operation_template_item, bundle) {
+        let _this = this;
         return new Promise((resolve, reject) => {
             operationModel.create({
                 code: operation_template_item.code,
@@ -266,10 +268,49 @@ class OperationtemplateController extends ApiController {
                 machine_type_id: operation_template_item.machine_type_id,
                 bundle_id: bundle.bundle_id,
             }).then(operation_created => {
-                resolve(operation_created);
+                if (operation_created) {
+                    _this.generateMachinetypeForOperation(operation_created, operation_created.machine_type_id).then(operations => {
+                        const machinetypeCreatedObj = operation_created.toJSON();
+                        machinetypeCreatedObj.machine_type = operations;
+                        resolve(operation_created);
+                    })
+                }
             })
                 .catch(error => reject(error));
         })
+    }
+
+    generateMachinetypeForOperation(operation, machine_type_id){
+        let _this = this;
+        return new Promise((resolve, reject) => {
+            const machinetype = [];
+            MachineTypesModel.findAll({
+                where: {
+                    machine_type_id: machine_type_id,
+                }
+            }).then(machinetype => {
+                let machinetypes_promises = [];
+                machinetype.forEach(machinetype_template_item => {
+                    machinetypes_promises.push(_this.generateMachineItemforOperation(machinetype_template_item, operation));
+                });
+
+                Promise.all(machinetypes_promises).then(machinetypes_created => {
+                    resolve(machinetypes_created);
+                }).catch(error => reject(error));
+            });
+        })
+    }
+
+    generateMachineItemforOperation(machine_type_item, operation){
+        return new Promise((resolve, reject) => {
+            MachineTypesModel.create({
+                label: machine_type_item.label
+            }).then(machinetypecreated => {
+                resolve(machinetypecreated);
+            })
+                .catch(error => reject(error));
+        })
+
     }
 }
 

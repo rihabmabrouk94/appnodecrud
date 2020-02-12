@@ -2,6 +2,7 @@ const models = require("../models/index");
 const orderModel = models['Orders'];
 const articleModel = models['Articles'];
 const clientModel = models['Clients'];
+const machinetypeModel = models['MachineTypes'];
 const validate = require("../helpers/validate");
 const ApiController = require("./apiController");
 
@@ -19,11 +20,15 @@ class OrderController extends ApiController {
             {
                 model: clientModel,
                 as: 'Clients',
+            },
+            {
+                model: machinetypeModel,
+                as: 'MachineTypes',
             }
-
 
         ];
     }
+
 
 }
 module.exports = OrderController;

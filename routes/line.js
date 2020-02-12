@@ -3,11 +3,15 @@ const LineController = require('./../Controllers/lineController');
 const LineControllerInst = new LineController();
 
 router.post('/create', function (req, res, next) {
-    LineControllerInst.createline(req, res, next)
+    LineControllerInst.create(req, res, next)
 });
 
 router.get('/list',function (req,res) {
     LineControllerInst.list(req, res)
+});
+
+router.get('/listbox/:id',function (req,res) {
+    LineControllerInst.getBoxByLine(req, res)
 });
 
 router.get('/:id', function (req, res, next) {

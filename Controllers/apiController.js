@@ -1,6 +1,6 @@
 const models = require("../models/index");
 const boxModel = models['Boxes'];
-const usersessionModel = models['Usersessions'];
+//const usersessionModel = models['Usersessions'];
 
 class ApiController {
 

@@ -26,7 +26,8 @@ module.exports = (sequelize, DataTypes) => {
     }, {});
     bundleModel.associate = function(models) {
         bundleModel.belongsTo(models.Orders, {
-            foreignKey: 'order_id'
+            foreignKey: 'order_id',
+            as: 'order'
         });
 
     };

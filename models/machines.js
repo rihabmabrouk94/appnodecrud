@@ -15,15 +15,21 @@ module.exports = (sequelize, DataTypes) => {
     }, {});
     Machines.associate = function (models) {
         // associations can be defined here
-        /*Machines.belongsTo(models.Boxes, {
+        Machines.belongsTo(models.Boxes, {
             foreignKey: 'box_id',
             onDelete: 'CASCADE',
             as: 'box'
-        });*/
+        });
+
+        // Machines.belongsTo(models.Lines, {
+        //     foreignKey: 'line_id',
+        //     onDelete: 'CASCADE',
+        //     as: 'Lines'
+        // });
         Machines.belongsTo(models.MachineTypes, {
             foreignKey: 'machine_type_id',
             onDelete: 'CASCADE',
-            as: 'machine_type'
+            as: 'MachineTypes'
         });
         Machines.belongsTo(models.MachineModels, {
             foreignKey: 'machine_model_id',

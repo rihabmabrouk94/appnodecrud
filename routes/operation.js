@@ -1,25 +1,35 @@
 const router = require('express').Router();
 const OperationController = require('./../Controllers/operationController');
-const OperationControllerInst = new OperationController();
+const operationControllerInst = new OperationController();
 
 router.post('/create', function (req, res, ) {
-    OperationControllerInst.create(req, res)
+    operationControllerInst.create(req, res)
 });
 
 router.get('/list',function (req,res) {
-    OperationControllerInst.list(req, res)
+    operationControllerInst.list(req, res)
 });
 
-router.get('/:id', function (req, res) {
-    OperationControllerInst.get(req, res);
+router.get('/operetionsList/:id', function (req, res, next) {
+    operationControllerInst.list_operation(req, res)
 });
 
-router.put('/:id', function (req, res, next) {
-    OperationControllerInst.update(req, res)
+router.get('/get/:id', function (req, res) {
+    operationControllerInst.get(req, res);
+});
+
+router.get('/startOperation/:operation_id/:usersession_id', function (req, res) {
+    operationControllerInst.startOperation(req, res);
+});
+
+router.put('/update/:id', function (req, res, next) {
+    operationControllerInst.update(req, res)
 });
 
 router.delete('/:id', function (req, res, next) {
-    OperationControllerInst.delete(req, res)
+    operationControllerInst.delete(req, res)
 });
+
+
 
 module.exports = router;

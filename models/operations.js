@@ -33,7 +33,8 @@ module.exports = (sequelize, DataTypes) => {
         }
 
     }, {});
-    operationModel.associate = function(models) {
+
+        operationModel.associate = function(models) {
         operationModel.belongsTo(models.Bundles, {
             foreignKey: 'bundle_id',
             as: 'Bundles'

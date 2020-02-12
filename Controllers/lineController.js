@@ -1,6 +1,8 @@
 const models = require("../models/index");
 const ApiControler = require("./apiController");
 const lineModel = models['Lines'];
+const BoxModel = models['Boxes'];
+const MachineModel = models['Machines'];
 
 class LineController extends ApiControler {
 
@@ -50,6 +52,46 @@ class LineController extends ApiControler {
                 }
             })
             .catch((error) => res.status(400).send(error));
+    }
+
+    getBoxByLine(req, res) {
+        const line_id = req.params.id;
+        lineModel.findOne({
+            where: {
+                line_id: line_id
+            }, include: [
+                {
+                    model: BoxModel,
+                    as : 'Boxes',
+
+                }
+            ]
+        }).then(lineFounded => {
+            if (!lineFounded) {
+                return res.status(404).send({
+                    message: 'line Not Found',
+                    status: false,
+                });
+            } else {
+                BoxModel.findAll({
+                    where: {
+                        line_id: lineFounded.line_id
+                    },
+                    include: [
+                        {
+                            model: MachineModel,
+                            as: 'Machines'
+                        }
+                    ]
+                }).then(boxes => {
+                    res.status(200).send({status: 'founded  ', data: boxes})
+                })
+                    .catch((error) => res.status(400).send(error));
+            }
+        })
+            .catch((error) => res.status(400).send(error));
+
+
     }
 
 }

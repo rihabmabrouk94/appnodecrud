@@ -24,6 +24,11 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'CASCADE',
       as:'Line'
     });
+    Boxes.belongsTo(models.Machines, {
+      foreignKey: 'id_machine',
+      onDelete: 'CASCADE',
+      as: 'Machines'
+    });
   };
   return Boxes;
 };
