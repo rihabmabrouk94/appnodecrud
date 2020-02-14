@@ -1,42 +1,34 @@
 'use strict';
 module.exports = {
     up: (queryInterface, Sequelize) => {
-        return queryInterface.createTable('CarteOperations', {
-            carte_operation_id: {
+        return queryInterface.createTable('CarteOperationSessions', {
+            carte_operation_session_id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            operation_id: {
+            carte_operation_id: {
                 type: Sequelize.INTEGER
             },
-            time: {
-                type: Sequelize.STRING
-            },
-            finished: {
+
+            usersession_id: {
                 type: Sequelize.STRING
             },
             quantity: {
                 type: Sequelize.INTEGER
             },
-            quantity_total: {
-                type: Sequelize.INTEGER
-            },
             label: {
                 type: Sequelize.STRING
             },
-            active: {
+            time: {
                 type: Sequelize.STRING
             },
-            datestart: {
+            start_time: {
                 type: Sequelize.DATE
             },
-            dateend: {
+            end_time: {
                 type: Sequelize.DATE
-            },
-            in_progress: {
-                type: Sequelize.STRING
             },
             createdAt: {
                 allowNull: false,
@@ -49,6 +41,6 @@ module.exports = {
         });
     },
     down: (queryInterface, Sequelize) => {
-        return queryInterface.dropTable('CarteOperations');
+        return queryInterface.dropTable('CarteOperationSessions');
     }
 };

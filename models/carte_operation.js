@@ -10,12 +10,6 @@ module.exports = (sequelize, DataTypes) => {
         operation_id: {
             type: DataTypes.INTEGER
         },
-        bundle_id: {
-            type: DataTypes.INTEGER
-        },
-        machine_id: {
-            type: DataTypes.INTEGER
-        },
         time: {
             type: DataTypes.STRING
         },
@@ -26,6 +20,9 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING
         },
         quantity: {
+            type: DataTypes.INTEGER
+        },
+        quantity_total: {
             type: DataTypes.INTEGER
         },
         datestart: {
@@ -56,16 +53,9 @@ module.exports = (sequelize, DataTypes) => {
     }, {});
 
     carteoperationModel.associate = function(models) {
-        carteoperationModel.belongsTo(models.Bundles, {
-            foreignKey: 'bundle_id',
-            as: 'Bundles'
-        });
-        carteoperationModel.belongsTo(models.Machines, {
-            foreignKey: 'machine_id',
-            as: 'Machines'
-        });
         carteoperationModel.belongsTo(models.Operations, {
-            foreignKey: 'operation_id'
+            foreignKey: 'operation_id',
+            as: 'Operations'
         });
     };
     return carteoperationModel;

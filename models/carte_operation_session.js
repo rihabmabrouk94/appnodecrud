@@ -1,13 +1,17 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
-    const operationModel = sequelize.define('Operations', {
-        operation_id:{
+    const carteoperationsessionModel = sequelize.define('CarteOperationSessions', {
+        carte_operation_session_id:{
             allowNull: false,
             autoIncrement: true,
             primaryKey: true,
             type: DataTypes.INTEGER
         },
-        bundle_id: {
+        carte_operation_id: {
+            type: DataTypes.INTEGER
+        },
+        usersession_id: {
+            allowNull: false,
             type: DataTypes.INTEGER
         },
         time: {
@@ -16,20 +20,14 @@ module.exports = (sequelize, DataTypes) => {
         label: {
             type: DataTypes.STRING
         },
-        finished: {
+        end_time: {
             type: DataTypes.STRING
         },
-        description: {
-            type: DataTypes.STRING
-        },
-        quantity_total: {
+        quantity: {
             type: DataTypes.INTEGER
         },
-        quantity_relised: {
-            type: DataTypes.INTEGER
-        },
-        machine_type_id: {
-            type: DataTypes.INTEGER
+        start_time: {
+            type: DataTypes.DATE
         },
         createdAt: {
             allowNull: false,
@@ -42,15 +40,14 @@ module.exports = (sequelize, DataTypes) => {
 
     }, {});
 
-        operationModel.associate = function(models) {
-        operationModel.belongsTo(models.Bundles, {
-            foreignKey: 'bundle_id',
-            as: 'Bundles'
+    carteoperationsessionModel.associate = function(models) {
+        carteoperationsessionModel.belongsTo(models.CarteOperations, {
+            foreignKey: 'carte_operation_id',
+            as: 'CarteOperations'
         });
-        operationModel.belongsTo(models.MachineTypes, {
-            foreignKey: 'machine_type_id',
-            as: 'MachineTypes'
+        carteoperationsessionModel.belongsTo(models.Usersessions, {
+            foreignKey: 'usersession_id'
         });
     };
-    return operationModel;
+    return carteoperationsessionModel;
 };
