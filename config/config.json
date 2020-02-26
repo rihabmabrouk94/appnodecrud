@@ -4,7 +4,8 @@
     "password": "marabout",
     "database": "crudadvenced",
     "host": "172.18.0.2",
-    "dialect": "postgres"
+    "dialect": "postgres",
+    "debug_url": false
   },
   "test": {
     "username": "root",

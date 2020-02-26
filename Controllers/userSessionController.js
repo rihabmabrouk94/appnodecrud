@@ -1,9 +1,11 @@
 const models = require("../models/index");
 const boxModel = models['Boxes'];
+const machineModel = models['Machines'];
 const lineModel = models['Lines'];
 const userModel = models['Users'];
 const usersessionModel = models['Usersessions'];
 const Sequelize = require("sequelize");
+
 const Op = require("sequelize")['Op'];
 const validate = require("../helpers/validate");
 const ApiController = require("./apiController");
@@ -13,15 +15,21 @@ class usersessionController extends ApiController {
     constructor() {
         super();
         this.entity_model = usersessionModel;
-        this.entity_id_name = 'id';
+        this.entity_id_name = 'usersession_id';
         this.list_includes = [
             {
                 model: userModel,
-                as: 'user_id'
+                as:'User',
             },
             {
                 model: boxModel,
-                as: 'box_id'
+                as: 'box',
+                include: [
+                    {
+                        model: machineModel,
+                        as: 'Machines',
+                    }
+                ]
             }
         ];
     }
@@ -31,15 +39,18 @@ class usersessionController extends ApiController {
         let box_mac_add = req.body.box_mac_add;
         let _this = this;
 
+
         if (!rf_id || rf_id === '' || !box_mac_add || box_mac_add === '') {
-            return res.status(404).send({
+            return res.status(500).send({
                 message: 'Error.RfidUserOrBoxMacAddressNotFounded',
                 status: false
             });
+        } else {
+            console.log('rfid', rf_id, 'box', box_mac_add)
         }
 
         if (!validate.isValidMac(box_mac_add)) {
-            return res.status(404).send({
+            return res.status(500).send({
                 message: 'Invalid mac address',
                 status: false
             });
@@ -62,10 +73,10 @@ class usersessionController extends ApiController {
                     if (!findedBox) {
                         return res.status(400).send({'message': 'invalid box'});
                     }
-                    _this.closeOldSessions(findedUser.id, findedBox.box_id);
+                    _this.closeOldSessions(findedUser.user_id, findedBox.box_id);
 
                     usersessionModel.create({
-                        user_id: findedUser.id,
+                        user_id: findedUser.user_id,
                         box_id: findedBox.box_id,
                         time_start: new Date(),
                         time_finish: null,
@@ -77,9 +88,11 @@ class usersessionController extends ApiController {
                             include: [
                                 {
                                     model: userModel,
+                                    as:'User'
                                 },
                                 {
                                     model: boxModel,
+                                    as:'box',
                                     include: [
                                         {
                                             model: lineModel,
@@ -90,8 +103,11 @@ class usersessionController extends ApiController {
                             ]
                         }).then(userSessionFullData => {
                             let objectToReturn = userSessionFullData.toJSON();
+                            console.log( 'rrrr', userSessionFullData)
+
                             objectToReturn.User = userSessionFullData.User.getMeWithoutPassword();
-                            res.status(201).send({
+
+                            res.send({
                                 status: 201,
                                 data: objectToReturn,
                                 message: " Session created "
@@ -117,6 +133,7 @@ class usersessionController extends ApiController {
             });
         }
         if (box_id) {
+            console.log(box_id)
             usersessionModel.update({ time_finish: new Date()}, {
                 where: {
                     time_finish: {

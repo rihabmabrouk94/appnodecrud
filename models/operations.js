@@ -31,6 +31,9 @@ module.exports = (sequelize, DataTypes) => {
         machine_type_id: {
             type: DataTypes.INTEGER
         },
+        carte_operation_id: {
+            type: DataTypes.INTEGER
+        },
         createdAt: {
             allowNull: false,
             type: DataTypes.DATE
@@ -50,6 +53,10 @@ module.exports = (sequelize, DataTypes) => {
         operationModel.belongsTo(models.MachineTypes, {
             foreignKey: 'machine_type_id',
             as: 'MachineTypes'
+        });
+        operationModel.belongsTo(models.CarteOperations, {
+            foreignKey: 'carte_operation_id',
+            as: 'CarteOperations'
         });
     };
     return operationModel;

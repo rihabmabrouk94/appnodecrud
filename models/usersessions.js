@@ -33,10 +33,12 @@ module.exports = (sequelize, DataTypes) => {
     });
     Usersessions.associate = function(models) {
         Usersessions.belongsTo(models.Users, {
-            foreignKey: 'user_id'
+            foreignKey:'user_id',
+                as:'User'
         });
         Usersessions.belongsTo(models.Boxes, {
-            foreignKey: 'box_id'
+            foreignKey:'box_id',
+            as:'box'
         });
     };
     return Usersessions;

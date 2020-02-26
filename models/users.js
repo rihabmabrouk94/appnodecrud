@@ -1,9 +1,12 @@
 'use strict';
-const RolesModel = require("./index")['Roles'];
-const UsersModel = require("./index")['Users'];
-
 module.exports = (sequelize, DataTypes) => {
   const Users = sequelize.define('Users', {
+    user_id: {
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+      type: DataTypes.INTEGER
+    },
     user_name: DataTypes.STRING,
     last_name: DataTypes.STRING,
     first_name: DataTypes.STRING,

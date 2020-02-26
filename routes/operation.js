@@ -18,7 +18,7 @@ router.get('/get/:id', function (req, res) {
     operationControllerInst.get(req, res);
 });
 
-router.get('/startOperation/:operation_id/:usersession_id', function (req, res) {
+router.get('/startOperation/:usersession_id/:operation_id', function (req, res) {
     operationControllerInst.startOperation(req, res);
 });
 
@@ -26,7 +26,7 @@ router.post('/startOperationsession', function (req, res) {
     operationControllerInst.startOperationSession(req, res);
 });
 
-router.get('/finishoperation/:carte_operation_session_id/:quantity', function (req, res) {
+router.post('/finishoperation', function (req, res) {
     operationControllerInst.finish_operation(req, res);
 });
 

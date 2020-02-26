@@ -1,3 +1,4 @@
+const Op =require("sequelize")
 const models = require("../models/index");
 const operationModel = models['Operations'];
 const bundleModel = models['Bundles'];
@@ -12,9 +13,6 @@ const validate = require("../helpers/validate");
 const ApiController = require("./apiController");
 
 class OperationController extends ApiController {
-    create(req, res) {
-        return super.create(req, res);
-    }
     constructor() {
         super();
         this.entity_model = operationModel;
@@ -27,10 +25,10 @@ class OperationController extends ApiController {
             {
                 model: MachineTypesModel,
                 as: 'MachineTypes',
-                include : [
+                include: [
                     {
                         model: MachineModel,
-                        as: 'machines',
+                        as: 'Machines',
                         include: [
                             {
                                 model: BoxModel,
@@ -44,16 +42,27 @@ class OperationController extends ApiController {
         ];
     }
 
+    create(req, res) {
+        return super.create(req, res);
+    }
+
     list_operation(req, res) {
         let usersession_id = req.params.id;
         UsersessionModel.findOne({
             include: [
                 {
                     model: BoxModel,
+                    as: 'box',
                     include: [
                         {
                             model: MachineModel,
-                            as: 'Machines'
+                            as: 'Machines',
+                            include: [
+                                {
+                                    model: MachineTypesModel,
+                                    as: 'MachineTypes'
+                                }
+                            ]
                         }
                     ]
                 }
@@ -65,21 +74,15 @@ class OperationController extends ApiController {
             if (usersessionfound) {
                 operationModel.findAll({
                     where: {
-                        machine_type_id: usersessionfound.Box.Machines.machine_type_id
+                        machine_type_id: usersessionfound.box.Machines.machine_type_id
                     },
                     include: [
                         {
-                            model: bundleModel,
-                            as: 'Bundles',
-                            include: [
-                                {
-                                    model: OrderModel,
-                                    as: 'order',
-                                }
-                            ]
+                            model: carteOperationModel,
+                            as: 'CarteOperations',
                         }
                     ]
-                }).then(function (resultquery) {
+                }).then(resultquery => {
                     if (!resultquery) {
                         return res.status(404).send({
                             success: false,
@@ -87,14 +90,16 @@ class OperationController extends ApiController {
                         });
                     }
                     return res.status(200).send({
+
                         success: true,
-                        data: resultquery
+                        data: resultquery,
+                        message: 'success'
                     });
                 }).catch((error) => res.status(500).send(error));
 
             } else {
                 return res.status(404).send({
-                    message: 'usersession Not Found',
+                    message: 'user session Not Found',
                 })
             }
         })
@@ -102,11 +107,11 @@ class OperationController extends ApiController {
     }
 
     startOperation(req, res) {
-        let _this = this
+        let _this = this;
         const operation_id = req.params.operation_id;
         const usersession_id = req.params.usersession_id;
 
-        if ((operation_id == null) || (operation_id == '')) {
+        if ((operation_id == null) || (operation_id === '')) {
             res.send({
                 success: false,
                 data: null,
@@ -114,7 +119,7 @@ class OperationController extends ApiController {
             });
             return;
         }
-        if ((usersession_id == null) || (usersession_id == '')) {
+        if ((usersession_id == null) || (usersession_id === '')) {
             res.send({
                 success: false,
                 data: null,
@@ -133,7 +138,7 @@ class OperationController extends ApiController {
                     where: {
                         operation_id: operation_id
                     },
-                    include : [
+                    include: [
                         {
                             model: operationModel,
                             as: 'Operations',
@@ -146,20 +151,23 @@ class OperationController extends ApiController {
                         },
                     ]
                 }).then(operationFounded => {
-                    if (operationFounded === null) {
-                        console.log('here1')
+                    if (operationFounded) {
                         const data_to_save = {
-                            operation_id: operation_id,
-                            datestart: new Date(),
-                            in_progress: 'Y',
+                            carte_operation_id: operationFounded.carte_operation_id,
+                            usersession_id: usersession_id,
+                            quantity: 1,
+                            time: null,
                             finished: 'N',
-                            quantity: 0,
-                            //quantity_total: Operations.Bundles.quantity
+                            in_progress: 'Y',
+                            end_time: null,
+                            start_time: new Date().toDateString()
                         };
-                        console.log('need to create', data_to_save)
-                        carteOperationModel.create(data_to_save).then(carte_started => {
-                            console.log('carte_started', carte_started)
-                            return res.status(200).send({status: 'started  ', data: carte_started})
+                        carteOperationSessionModel.create(data_to_save).then(carte_session_started => {
+                            return res.status(200).send({
+                                status: true,
+                                data: carte_session_started,
+                                messages: ['Carte session started with success']
+                            })
                         });
                     } else {
                         res.send({
@@ -181,32 +189,38 @@ class OperationController extends ApiController {
             .catch((error) => res.status(500).send(error))
     }
 
-    finish_operation(req, res){
-        let carte_operation_session_id = req.params.carte_operation_session_id;
-        let quantity = parseInt(String(req.params.quantity));
-        let time = parseInt(String(req.params.time));
+    finish_operation(req, res) {
+        let carte_operation_session_id = req.body.carte_operation_session_id;
+        let quantity = parseInt(String(req.body.quantity));
+        let time = parseInt(String(req.body.time));
 
-        if ((carte_operation_session_id == null) || (carte_operation_session_id == '')) {
-            res.send({
+        if ((carte_operation_session_id == null) || (carte_operation_session_id === '')) {
+            res.status(500).send({
                 success: false,
                 data: null,
-                messages:'carte_operation_id not provided'
+                messages: [
+                    'carte_operation_id not provided'
+                ]
             });
             return;
         }
-        if ((quantity == null) || (quantity == '')) {
-            res.send({
+        if ((quantity == null) || (quantity === '')) {
+            res.status(500).send({
                 success: false,
                 data: null,
-                messages:'quantity not provided'
+                messages: [
+                    'quantity not provided'
+                ]
             });
             return;
         }
-        if ((time == null) || (time == '')) {
-            res.send({
+        if ((time == null) || (time === '')) {
+            res.status(500).send({
                 success: false,
                 data: null,
-                messages:'quantity not provided'
+                messages: [
+                    'quantity not provided'
+                ]
             });
             return;
         }
@@ -236,27 +250,33 @@ class OperationController extends ApiController {
         }).then(cosFounded => {
 
             if (cosFounded) {
-                if (cosFounded.end_time !== null || !(cosFounded.quantity === 0 || cosFounded.quantity === null) ) {
+                if (cosFounded.end_time !== null || !(cosFounded.quantity === 0 || cosFounded.quantity === null)) {
                     return res.status(500).send({
                         status: false,
-                        message: 'Cps already closed'
+                        messages: [
+                            'Cps already closed'
+                        ]
                     });
                 }
 
                 if (cosFounded.CarteOperations.finished === 'Y') {
                     return res.status(500).send({
                         status: false,
-                        message: 'Cpo already closed'
+                        messages: [
+                            'Cpo already closed'
+                        ]
                     });
                 }
 
                 let quantity_need = cosFounded.CarteOperations.quantity_total;
                 let quantity_done = (cosFounded.CarteOperations.quantity) ? parseInt(cosFounded.CarteOperations.quantity) : 0;
 
-                if ( (quantity_done + quantity) > quantity_need) {
+                if ((quantity_done + quantity) > quantity_need) {
                     return res.status(500).send({
                         status: false,
-                        message: 'Invalid quantity to produce'
+                        messages: [
+                            'Invalid quantity to produce'
+                        ]
                     });
                 }
 
@@ -264,9 +284,9 @@ class OperationController extends ApiController {
                 const is_finished = (quantity_total_done === quantity_need);
                 carteOperationModel.update({
                     quantity: quantity_total_done,
-                    time:time,
+                    time: time,
                     finished: is_finished ? 'Y' : 'N',
-                    in_progress : is_finished ? 'N' : 'Y',
+                    in_progress: is_finished ? 'N' : 'Y',
                     dateend: (is_finished) ? new Date().toDateString() : null
                 }, {
                     where: {
@@ -283,15 +303,20 @@ class OperationController extends ApiController {
                     }).then(cpsUpdated => {
                         return res.send({
                             success: true,
-                            messages:' Operation session updated'
+                            messages: [
+                                'Operation session updated'
+                            ],
+                            data: cpsUpdated
                         });
                     });
                 })
-                .catch(err => res.send(err));
+                    .catch(err => res.send(err));
             } else {
                 return res.status(500).send({
                     success: false,
-                    messages:'Cps not exists'
+                    messages: [
+                        'Cps not exists'
+                    ]
                 });
             }
         }).catch((error) => res.status(500).send(error))
@@ -344,11 +369,11 @@ class OperationController extends ApiController {
                                 finished: 'N',
                                 quantity: 0,
                             }).then(carteSession => {
-                                carteOperationSessionModel.findAll({
-                                    where : {
-                                        carte_operation_id : carteSession.carte_operation_id,
+                                carteOperationSessionModel.findOne({
+                                    where: {
+                                        carte_operation_id: carteSession.carte_operation_id,
                                         carte_operation_session_id: carteSession.carte_operation_session_id,
-                                    },include: [
+                                    }, include: [
                                         {
                                             model: carteOperationModel,
                                             as: 'CarteOperations',
@@ -366,7 +391,7 @@ class OperationController extends ApiController {
                                             ]
                                         }
                                     ]
-                                }).then( carteSessiondata => {
+                                }).then(carteSessiondata => {
                                     return res.status(200).send({
                                         state: 'started',
                                         status: true,
@@ -406,7 +431,7 @@ class OperationController extends ApiController {
     closeOponedCps(usersession_id) {
         return new Promise((resolve, reject) => {
             carteOperationSessionModel.update({
-                    end_time : new Date().toDateString(),
+                    end_time: new Date().toDateString(),
                     quantity: 0,
                 },
                 {
@@ -421,7 +446,7 @@ class OperationController extends ApiController {
                     cps_closed: count,
                 });
             })
-            .catch(error => reject(error));
+                .catch(error => reject(error));
         })
     }
 

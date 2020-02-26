@@ -15,6 +15,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     line_id: {
       type: DataTypes.INTEGER
+    },id_machine: {
+      type: DataTypes.INTEGER
     },
   }, {});
   Boxes.associate = function(models) {

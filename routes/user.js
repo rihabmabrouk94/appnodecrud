@@ -29,6 +29,9 @@ router.get('/list', function (req, res, next) {
 router.get('/:id', function (req, res, next) {
     UserControllerInst.get(req, res, next)
 });
+router.get('/:id', function (req, res, next) {
+    usersessionControllerInst.get(req, res, next)
+});
 
 router.put('/:id', auth, function (req, res, next) {
     UserControllerInst.update(req, res, next)

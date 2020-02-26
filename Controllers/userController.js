@@ -10,12 +10,12 @@ class userController extends ApiController {
     constructor() {
         super();
         this.entity_model = userModel;
-        this.entity_id_name = 'id';
+        this.entity_id_name = 'user_id';
         this.list_includes = [
-            {
-                model: rolesModel,
-                as: 'role_id'
-            }
+            // {
+            //     model: rolesModel,
+            //     as: 'role_id'
+            // }
         ];
     }
 // conditions before we save data(validate the data )

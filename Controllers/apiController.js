@@ -1,6 +1,6 @@
 const models = require("../models/index");
 const boxModel = models['Boxes'];
-//const usersessionModel = models['Usersessions'];
+const usersessionModel = models['Usersessions'];
 
 class ApiController {
 
@@ -27,12 +27,14 @@ class ApiController {
             return;
         }
 
+        console.log('herdfdf')
         let entity_id = req.params.id;
         const where = {};
         where[this.entity_id_name] = entity_id;
 
         this.entity_model.findOne({
-            where: where
+            where: where,
+            include : this.list_includes
         }).then(function (resultEntity) {
             if (!resultEntity) {
                 return res.status(404).send({
@@ -174,6 +176,7 @@ class ApiController {
         if (typeof this.checkConfiguration(req, res) !== "boolean") {
             return;
         }
+
 
         console.log('req.params', req.query)
         const limit = (req.query.limit) ? Number(req.query.limit) : 10;
